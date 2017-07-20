@@ -1,3 +1,4 @@
+# coding=utf-8
 # Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +19,7 @@ import webapp2
 class MainPage(webapp2.RequestHandler):
     def get(self):
         self.response.headers['Content-Type'] = 'text/html'
-        self.response.write('<body style=\'background-color: green\'>Órale, México - Spinnaker - GNP!</body>')
+        self.response.write(u"<body style=\'background-color: green\'>Órale, México - Spinnaker - GNP!</body>")
 
 
 app = webapp2.WSGIApplication([
