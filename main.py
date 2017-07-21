@@ -14,7 +14,31 @@
 # limitations under the License.
 
 import webapp2
+from urlparse import urlparse
 
+
+class RestHandler(webapp2.RequestHandler):
+  def get(self):
+    parsedUrl = urlparse(self.request.url)
+    self.response.headers['Content-Type'] = 'application/json'
+    self.response.write(parsedUrl.path)
+
+  def post(self):
+    parsedUrl = urlparse(self.request.url)
+    self.response.headers['Content-Type'] = 'application/json'
+    self.response.write(parsedUrl.path)
+
+
+class PrivatePageHandler(webapp2.RequestHandler):
+  def get(self):
+    parsedUrl = urlparse(self.request.url)
+    self.response.headers['Content-Type'] = 'text/html'
+    self.response.write(parsedUrl.path)
+
+  def post(self):
+    parsedUrl = urlparse(self.request.url)
+    self.response.headers['Content-Type'] = 'text/html'
+    self.response.write(parsedUrl.path)
 
 class MainPage(webapp2.RequestHandler):
     def get(self):
@@ -24,4 +48,6 @@ class MainPage(webapp2.RequestHandler):
 
 app = webapp2.WSGIApplication([
     ('/', MainPage),
+    ('/private/.*', PrivatePageHandler),
+    ('/rest/.*', RestHandler),
 ], debug=True)
