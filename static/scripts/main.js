@@ -29,6 +29,8 @@ function FriendlyChat() {
   this.signOutButton.addEventListener('click', this.signOut.bind(this));
   this.signInSnackbar = document.getElementById('must-signin-snackbar');
 
+  this.submitButton = document.getElementById('submit');
+  this.submitButton.addEventListener('click', this.submitButtonAction.bind(this));
 
   this.initFirebase();
 }
@@ -52,6 +54,14 @@ FriendlyChat.prototype.onAuthStateChanged = function(user) {
     var profilePicUrl = user.photoURL; // Only change these two lines!
     var userName = user.displayName;
     var self = this;
+
+    firebase.auth().currentUser.getToken(/* forceRefresh */ true).then(function(idToken) {
+      console.log('getToken', idToken, user);
+      self.userIdToken = idToken;
+    }).catch(function(error) {
+      self.useridToken = null;
+      console.error('Error getting the logged in user token', user, error);
+    });
     user.getToken().then(function(idToken) {
       console.log('getToken', idToken, user);
       self.userIdToken = idToken;
@@ -67,6 +77,8 @@ FriendlyChat.prototype.onAuthStateChanged = function(user) {
      // Hide sign-in button.
     this.signInButton.setAttribute('hidden', 'true');
 
+    this.submitButton.removeAttribute('disabled')
+
 
   } else { // User is signed out!
     // Hide user's profile and sign-out button.
@@ -77,6 +89,8 @@ FriendlyChat.prototype.onAuthStateChanged = function(user) {
 
     // Show sign-in button.
     this.signInButton.removeAttribute('hidden');
+    this.submitButton.removeAttribute('disabled')
+
 
   }
 };
@@ -97,6 +111,28 @@ FriendlyChat.prototype.getWidgetUrl = function()  {
 FriendlyChat.prototype.signOut = function() {
   // Sign out of Firebase.
   this.auth.signOut();
+};
+
+
+FriendlyChat.prototype.submitButtonAction = function() {
+    var userIdToken = this.userIdToken;
+    console.log('submitButtonAction', userIdToken);
+    $.ajax('/rest/customer', {
+    /* Set header for the XMLHttpRequest to get data from the web server
+    associated with userIdToken */
+    headers: {
+      'Authorization': 'Bearer ' + userIdToken
+    },
+    'data': JSON.stringify({'prop': 'value'}),
+    'type': 'post',
+    'dataType': 'json',
+    'success': function(json_data) {
+      console.log('JSON-Success', json_data)
+    },
+    'error': function(error) {
+        console.error('submitButtonAction error in post', error);
+    },
+  });
 };
 
 // A loading image URL.

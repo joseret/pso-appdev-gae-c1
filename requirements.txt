@@ -1,1 +1,8 @@
+google-auth
+requests==2.3.0
+requests-toolbelt
+pyopenssl
+ndg-httpsclient
+pyasn1
+firebase-admin
 google-api-python-client
