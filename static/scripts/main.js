@@ -18,6 +18,8 @@
 // Initializes FriendlyChat.
 function FriendlyChat() {
   this.checkSetup();
+  this.signInButton = document.getElementById('sign-in');
+  this.signInButton.addEventListener('click', this.signInWithPopup.bind(this));
 
   this.initFirebase();
 }
@@ -25,6 +27,19 @@ function FriendlyChat() {
 // Sets up shortcuts to Firebase features and initiate firebase auth.
 FriendlyChat.prototype.initFirebase = function() {
   // TODO(DEVELOPER): Initialize Firebase.
+  this.signInButton.removeAttribute('hidden');
+};
+
+
+FriendlyChat.prototype.signInWithPopup = function() {
+  window.open(this.getWidgetUrl(), 'Autenticar', 'width=1100,height=735');
+};
+
+/**
+ * @return {string} The URL of the FirebaseUI standalone widget.
+ */
+FriendlyChat.prototype.getWidgetUrl = function()  {
+  return '/static/widget.html';
 };
 
 
