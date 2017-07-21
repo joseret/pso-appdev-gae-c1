@@ -1,0 +1,7 @@
+{
+  "name": "Google Cloud PSO AppDev Cloud Start",
+  "short_name": "GCloud PSO AppDev CS",
+  "start_url": "/static/index.html",
+  "display": "standalone",
+  "orientation": "portrait"
+}
