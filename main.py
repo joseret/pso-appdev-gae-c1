@@ -48,10 +48,11 @@ from firebase_admin import auth as firebase_auth
 
 if os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine/'):
   # Production, no need to alter anything
+  cred = credentials.Certificate('services/pso-appdev-cs-1-2a4c1ef76af6.json')
   try:
     default_app = firebase_admin.get_app()
   except:
-    default_app = firebase_admin.initialize_app()
+    default_app = firebase_admin.initialize_app(cred)
 else:
   # Local development server
   cred = credentials.Certificate('localonly/pso-appdev-cs-1-2a4c1ef76af6.json')
