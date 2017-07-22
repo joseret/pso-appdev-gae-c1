@@ -22,6 +22,8 @@ import requests
 import webapp2
 from urlparse import urlparse
 
+from services.processing_service import ProcessingService
+
 import google
 if os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine/'):
   # Production, no need to alter anything
@@ -104,19 +106,57 @@ def getClaimsFromToken(request, response):
 
 class RestHandler(webapp2.RequestHandler):
   def get(self):
-    if not getClaimsFromToken(self.request, self.response):
-      return
-    parsedUrl = urlparse(self.request.url)
+    try:
+      if not getClaimsFromToken(self.request, self.response):
+        return
+      parsedUrl = urlparse(self.request.url)
+      ps = ProcessingService('V1.0.0')
+      if parsedUrl.path == '/rest/policy':
+        result =  ps.get_policies("jose")
+        if (type(result) == dict and
+              'success' in result):
+
+          if result['success']:
+            self.response.headers['Content-Type'] = 'text/json'
+            self.response.status = result['status']
+            self.response.write(json.dumps(result['payload']))
+          else:
+            self.response.headers['Content-Type'] = 'text/json'
+            self.response.status = result['status']
+          return
+    except Exception as e:
+      logging.error(e)
+
     self.response.headers['Content-Type'] = 'application/json'
-    self.response.write(parsedUrl.path)
+    self.response.status = '500 - Unexpected Error'
 
   def post(self):
-    if not getClaimsFromToken(self.request, self.response):
-      return
+    try:
+      if not getClaimsFromToken(self.request, self.response):
+        return
 
-    parsedUrl = urlparse(self.request.url)
+      parsedUrl = urlparse(self.request.url)
+
+      json_data = json.loads(self.request.body)
+      ps = ProcessingService('V1.0.0')
+      if parsedUrl.path == '/rest/policy':
+        result =  ps.update_policy("jose", json_data)
+        if (type(result) == dict and
+              'success' in result):
+
+          if result['success']:
+            self.response.headers['Content-Type'] = 'text/json'
+            self.response.status = result['status']
+            self.response.write(json.dumps(result['payload']))
+          else:
+            self.response.headers['Content-Type'] = 'text/json'
+            self.response.status = result['status']
+          return
+    except Exception as e:
+      logging.error(e)
+
     self.response.headers['Content-Type'] = 'application/json'
-    self.response.write(json.dumps({'path': parsedUrl.path}))
+    self.response.status = '500 - Unexpected Error'
 
 
 class PrivatePageHandler(webapp2.RequestHandler):
