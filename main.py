@@ -19,6 +19,7 @@ import sys
 import json
 import logging
 import requests
+import traceback
 import webapp2
 from urlparse import urlparse
 
@@ -105,15 +106,23 @@ def getClaimsFromToken(request, response):
     return None
   return result
 
+def get_user_id(claims):
+  print 'claims', json.dumps(claims, indent=4)
+  return str(claims['info']['uid'])
+
 class RestHandler(webapp2.RequestHandler):
   def get(self):
     try:
-      if not getClaimsFromToken(self.request, self.response):
+      claims = getClaimsFromToken(self.request, self.response)
+      if not claims:
         return
+
+      user_id = get_user_id(claims)
+
       parsedUrl = urlparse(self.request.url)
       ps = ProcessingService('V1.0.0')
       if parsedUrl.path == '/rest/policy':
-        result =  ps.get_policies("jose")
+        result =  ps.get_policies(user_id)
         if (type(result) == dict and
               'success' in result):
 
@@ -127,21 +136,25 @@ class RestHandler(webapp2.RequestHandler):
           return
     except Exception as e:
       logging.error(e)
+      logging.error(traceback.format_exc())
 
     self.response.headers['Content-Type'] = 'application/json'
     self.response.status = '500 - Unexpected Error'
 
   def post(self):
     try:
-      if not getClaimsFromToken(self.request, self.response):
+      claims = getClaimsFromToken(self.request, self.response)
+      if not claims:
         return
 
+      user_id = get_user_id(claims)
+      print 'user_id', user_id
       parsedUrl = urlparse(self.request.url)
 
-      json_data = json.loads(self.request.body)
+      json_data = json.loads(self.request.body.decode('utf-8'))
       ps = ProcessingService('V1.0.0')
       if parsedUrl.path == '/rest/policy':
-        result =  ps.update_policy("jose", json_data)
+        result =  ps.update_policy(user_id, json_data)
         if (type(result) == dict and
               'success' in result):
 
@@ -155,6 +168,7 @@ class RestHandler(webapp2.RequestHandler):
           return
     except Exception as e:
       logging.error(e)
+      logging.error(traceback.format_exc())
 
     self.response.headers['Content-Type'] = 'application/json'
     self.response.status = '500 - Unexpected Error'

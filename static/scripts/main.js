@@ -125,7 +125,7 @@ FriendlyChat.prototype.getInfo = function() {
     headers: {
       'Authorization': 'Bearer ' + userIdToken
     },
-    'data': JSON.stringify({'prop': 'value'}),
+    'data': null,
     'type': 'get',
     'dataType': 'json',
     'success': function(json_data) {
@@ -157,15 +157,17 @@ FriendlyChat.prototype.getInfo = function() {
 
 FriendlyChat.prototype.submitButtonAction = function() {
     var userIdToken = this.userIdToken;
-    console.log('submitButtonAction', userIdToken);
+    console.log('submitButtonAction', userIdToken, );
     var self = this;
+    var info = {'policy_id': $('#reference').val(), 'nickname': $('#nickname').val()};
+    console.log('info', info, );
     $.ajax('/rest/policy', {
     /* Set header for the XMLHttpRequest to get data from the web server
     associated with userIdToken */
     headers: {
       'Authorization': 'Bearer ' + userIdToken
     },
-    'data': JSON.stringify({'prop': 'value'}),
+    'data': JSON.stringify(info),
     'type': 'post',
     'dataType': 'json',
     'success': function(json_data) {

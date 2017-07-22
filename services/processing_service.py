@@ -5,6 +5,13 @@ import datetime
 import random
 from google.appengine.ext import ndb
 
+
+class Policy(ndb.Model):
+  policy_id = ndb.StringProperty(required=True)
+  nickname = ndb.StringProperty()
+  owner = ndb.StringProperty()
+  updated_at = ndb.DateTimeProperty(auto_now=True)
+
 def service_helper(success, status, payload):
   logical_success = False
   if success:
@@ -15,44 +22,56 @@ def service_helper(success, status, payload):
     'payload': payload
   }
 
+def get_safe(o_dict, o_key, default_value):
+  print 'dict', o_dict, o_key, type(o_dict),  'x'
+  try:
+    if (type(o_dict) is dict
+          and  o_key in o_dict):
+      return str(o_dict[o_key]);
+
+  except:
+    pass
+  return default_value;
+
 class ProcessingService(object):
 
   def __init__(self, service_version):
     self.__service_version = str(service_version)
 
-  def update_policy(self, user_id, policy_info):
-    policy_info['owner'] = user_id
+  def update_policy(self, user_id, policy_input):
+    print 'what', get_safe(policy_input, 'policy_id', 'policy-id-' + str(datetime.datetime.utcnow()))
+    policy_info = Policy(key=ndb.Key(Policy, get_safe(policy_input, 'policy_id', str(datetime.datetime.utcnow()))),
+          policy_id =  get_safe(policy_input, 'policy_id', 'policy-id-' + str(datetime.datetime.utcnow())),
+          nickname = get_safe(policy_input, 'nickname', 'nickname-' + str(datetime.datetime.utcnow())),
+          owner = user_id
+    )
+    policy_info.put()
+
     return service_helper(True, "201", {
-            'policy_id': '1',
-            'nickname': 'nick1',
-            'owner': user_id
+            'policy_id': policy_info.policy_id,
+            'nickname': policy_info.nickname,
+            'owner': policy_info.owner
           })
 
 
   def get_policies(self, user_id):
-    if (random.randint(1, 10) >= 4):
-      return service_helper( True, 200, {
-        'version': self.__service_version,
-        'list': [
-          {
-            'policy_id': '1',
-            'nickname': 'nick1',
-            'owner': user_id
-          },
-          {
-            'policy_id': '2',
-            'nickname': 'nick2',
-            'owner': user_id
-          },
-          {
-            'policy_id': '3',
-            'nickname': 'nick3',
-            'owner': user_id
-          },
-        ]
-      })
-    else:
-      return service_helper( True, 200, {
-        'version': self.__service_version,
-        'list': []
-      })
+    query = Policy.query(Policy.owner == user_id).order(Policy.policy_id)
+    policies_list = []
+    policies_result = query.fetch();
+    for policy_info in policies_result:
+      policy_entry = {
+            'policy_id': policy_info.policy_id,
+            'nickname': policy_info.nickname,
+            'owner': policy_info.owner
+      }
+      policies_list.append(policy_entry);
+
+    return service_helper( True, 200, {
+      'version': self.__service_version,
+      'list': policies_list
+    })
+    # else:
+    #   return service_helper( True, 200, {
+    #     'version': self.__service_version,
+    #     'list': []
+    #   })
