@@ -47,13 +47,17 @@ FriendlyChat.prototype.getInfo = function() {
         $("#messages").empty();
         for(var o in json_data['list']) {
           console.log('list_entry', o);
-          var innerInfo = $('<div  style="padding-bottom: 10px"  />');
+          var innerInfo = $('<div  style="padding-bottom: 2px"  />');
           innerInfo.append( $('<span style="padding-right: 10px" />').text('Numero'));
           innerInfo.append( $('<span style="padding-right: 10px" />').text(json_data['list'][o]['policy_id']));
           $("#messages").append(innerInfo);
-          var innerInfo = $('<div  style="padding-bottom: 10px"  />');
+          var innerInfo = $('<div  style="padding-bottom: 2px"  />');
           innerInfo.append( $('<span style="padding-right: 10px" />').text('Nombre'));
           innerInfo.append( $('<span style="padding-right: 10px" />').text(json_data['list'][o]['nickname']));
+          $("#messages").append(innerInfo);
+          var innerInfo = $('<div  style="padding-bottom: 10px"  />');
+          innerInfo.append( $('<span style="padding-right: 10px" />').text('Entrado'));
+          innerInfo.append( $('<span style="padding-right: 10px" />').text(json_data['list'][o]['last_entered']));
           $("#messages").append(innerInfo);
         }
       } else {
@@ -71,25 +75,35 @@ FriendlyChat.prototype.submitButtonAction = function() {
     var userIdToken = this.userIdToken;
     console.log('submitButtonAction', userIdToken);
     var self = this;
-    $.ajax('/rest/policy', {
-    /* Set header for the XMLHttpRequest to get data from the web server
-    associated with userIdToken */
-    headers: {
-      'Authorization': 'Bearer ' + userIdToken
-    },
-    'data': JSON.stringify({'prop': 'value'}),
-    'type': 'post',
-    'dataType': 'json',
-    'success': function(json_data) {
-      console.log('JSON-Success', json_data)
-      $('#messages-bottom').text("Actualizado")
-        .css("display","block").fadeOut(2000);
+    var info = {'policy_id': $('#reference').val(), 'nickname': $('#nickname').val()};
+    if (info['policy_id'] && info['policy_id'].length > 0) {
+
+
+      $.ajax('/rest/policy', {
+        /* Set header for the XMLHttpRequest to get data from the web server
+        associated with userIdToken */
+        headers: {
+          'Authorization': 'Bearer ' + userIdToken
+        },
+        'data': JSON.stringify(info),
+        'type': 'post',
+        'dataType': 'json',
+        'success': function(json_data) {
+          console.log('JSON-Success', json_data)
+          $('#messages-bottom').text("Actualizado")
+            .css("display","block").fadeOut(2000);
+          $('#reference').val('');
+          $('#nickname').val('')
+          self.getInfo();
+        },
+        'error': function(error) {
+            console.error('submitButtonAction error in post', error);
+        },
+      });
+    }
+    else {
       self.getInfo();
-    },
-    'error': function(error) {
-        console.error('submitButtonAction error in post', error);
-    },
-  });
+    }
 };
 
 // A loading image URL.

@@ -25,6 +25,7 @@ from processing_service import ProcessingService
 
 
 REST_COMMAND_TYPE = 'policy'
+
 class RestHandler(webapp2.RequestHandler):
   def get(self):
     try:
@@ -78,7 +79,12 @@ class RestHandler(webapp2.RequestHandler):
 class MainPage(webapp2.RequestHandler):
     def get(self):
         self.response.headers['Content-Type'] = 'text/html'
-        self.response.write(u"<body style=\'background-color: green\'>Órale, México - Simple App - Stubs) - GNP!</body>")
+        # print "V:", os.environ("CURRENT_VERSION_ID")
+        for key, value in os.environ.iteritems():
+            print 'env', "{} = {}\n".format(key, value)
+        self.response.write(u"<body style=\'background-color: orange\'>Órale, México - Simple App  - DB) - GNP!"
+          + u"v[" + unicode(os.environ["CURRENT_VERSION_ID"]) + "]"
+          + u" </body>")
 
 
 app = webapp2.WSGIApplication([
